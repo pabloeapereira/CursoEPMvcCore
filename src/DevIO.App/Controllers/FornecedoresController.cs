@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using AutoMapper;
 using DevIO.App.ViewModels;
@@ -12,11 +13,13 @@ namespace DevIO.App.Controllers
     public class FornecedoresController : BaseController
     {
         private readonly IFornecedorRepository _fornecedorRepository;
+        private readonly IEnderecoRepository _enderecoRepository;
         private readonly IMapper _mapper;
 
-        public FornecedoresController(IFornecedorRepository fornecedorRepository, IMapper mapper)
+        public FornecedoresController(IFornecedorRepository fornecedorRepository, IEnderecoRepository enderecoRepository, IMapper mapper)
         {
             _fornecedorRepository = fornecedorRepository;
+            _enderecoRepository = enderecoRepository;
             _mapper = mapper;
         }
 
@@ -96,6 +99,36 @@ namespace DevIO.App.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        
+
+        public async Task<IActionResult> AtualizarEndereco(Guid id)
+        {
+            var fornecedor = await ObterFornecedorEndereco(id);
+            if (fornecedor == null)
+            {
+                return NotFound();
+            }
+
+            return PartialView("_AtualizarEndereco", new FornecedorViewModel {Endereco = fornecedor.Endereco});
+        }
+
+        [HttpPost]
+        [ActionName("AtualizarEndereco")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AtualizarEnderecoConfirmed(FornecedorViewModel fornecedorViewModel)
+        {
+            ModelState.Remove("Nome");
+            ModelState.Remove("Documento");
+
+            if (!ModelState.IsValid) return PartialView("_AtualizarEndereco", fornecedorViewModel);
+
+            await _enderecoRepository.Atualizar(_mapper.Map<Endereco>(fornecedorViewModel.Endereco));
+
+            var url = Url.Action("ObterEndereco", "Fornecedores", new { id=fornecedorViewModel.Endereco.FornecedorId});
+
+            return Json(new {success=true, url});
+        }
+
         private async Task<FornecedorViewModel> ObterFornecedorEndereco(Guid id)
         {
             return _mapper.Map<FornecedorViewModel>(await _fornecedorRepository.ObterFornecedorEndereco(id));
@@ -104,6 +137,17 @@ namespace DevIO.App.Controllers
         private async Task<FornecedorViewModel> ObterFornecedorProdutosEndereco(Guid id)
         {
             return _mapper.Map<FornecedorViewModel>(await _fornecedorRepository.ObterFornecedorProdutosEndereco(id));
+        }
+
+        public async Task<IActionResult> ObterEndereco(Guid id)
+        {
+            var fornecedor = await ObterFornecedorEndereco(id);
+            if (fornecedor == null)
+            {
+                return NotFound();
+            }
+
+            return PartialView("_DetalhesEndereco", fornecedor);
         }
     }
 }
