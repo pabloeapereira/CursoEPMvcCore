@@ -2,29 +2,39 @@
 using DevIO.Business.Models;
 using System;
 using System.Threading.Tasks;
+using DevIO.Business.Models.Validations;
 
 namespace DevIO.Business.Services
 {
-    public class ProdutoService : BaseService, IFornecedorService
+    public class ProdutoService : BaseService, IProdutoService
     {
-        public async Task Adicionar(Fornecedor fornecedor)
+        private readonly IProdutoRepository _produtoRepository;
+
+        public ProdutoService(INotificador notificador, IProdutoRepository produtoRepository) : base(notificador)
         {
-            throw new NotImplementedException();
+            _produtoRepository = produtoRepository;
+        }
+        public async Task Adicionar(Produto produto)
+        {
+            if (!ExecutarValidacao(new ProdutoValidation(), produto)) return;
+            await _produtoRepository.Adicionar(produto);
         }
 
-        public async Task Atualizar(Fornecedor fornecedor)
+        public async Task Atualizar(Produto produto)
         {
-            throw new NotImplementedException();
+            if (!ExecutarValidacao(new ProdutoValidation(), produto)) return;
+            await _produtoRepository.Atualizar(produto);
         }
 
-        public async Task AtualizarEndereco(Endereco endereco)
-        {
-            throw new NotImplementedException();
-        }
 
         public async Task Remover(Guid id)
         {
-            throw new NotImplementedException();
+            await _produtoRepository.Remover(id);
+        }
+
+        public void Dispose()
+        {
+            _produtoRepository?.Dispose();
         }
     }
 }
