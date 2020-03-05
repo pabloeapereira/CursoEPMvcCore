@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="web.config" />
     <Content Remove="wwwroot\imagens\786ed959-fc11-4082-a8ed-2e1618cdba23_00052.JPG" />
     <Content Remove="wwwroot\imagens\7b68ccde-035b-4797-b2b4-1175e5965707_00052.JPG" />
   </ItemGroup>
@@ -27,6 +28,11 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\imagens\" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Include="web.config" />
   </ItemGroup>
 
 </Project>
